@@ -144,6 +144,27 @@ export const tokens = {
       Decimals: 6,
     }
   }
-}
+} as const;
 
+typeof tokens['Ethereum']
 
+type NestedKeyOf<ObjectType extends object> = 
+{[Key in keyof ObjectType & (string | number)]: ObjectType[Key] extends object 
+? `${Key}` | `${Key}.${NestedKeyOf<ObjectType[Key]>}`
+: `${Key}`
+}[keyof ObjectType & (string | number)];
+// type ObjectKeys = NestedKeyOf<Person>
+
+const getObjectProperty = <T, K extends keyof T>(obj: T, key: K): T[K] => {
+  return obj[key];
+};
+
+// Example usage
+const obj = {
+  nested: {
+    value: 42,
+  },
+};
+
+type NestedValueType = typeof obj.nested.value; // number
+const nestedValue = getObjectProperty(tokens, 'Ethereum');

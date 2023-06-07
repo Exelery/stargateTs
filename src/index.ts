@@ -6,67 +6,9 @@ import { privateKeyToAccount } from 'viem/accounts';
 import { StargateRouterABI } from './abi/router.js';
 import { chains } from './chains.js'
 import { tokens } from './tokens.js';
+import { STARGATE_ROUTER_ADDRESS } from './config.js'
 
 
-
-
-// export const publicClient = createPublicClient({
-//   chain: arbitrum,
-//   transport: http(),
-// })
-
-
-// const contract = getContract({
-//   address: '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8',
-//   abi: ERC20_ABI,
-//   publicClient
-
-// })
-
-// const result = await contract.read.totalSupply()
-
-// console.log(result)
-
-// const balance = await contract.read.balanceOf(['0xFCc874C64D2200a8271cA8d3018caECDfB5A4ba2'])
-
-// console.log(formatUnits(balance as bigint, 6 ), '$')
-
-
-const walletClient = createWalletClient({
-  account,
-  chain: arbitrumGoerli,
-  transport: http()
-})
-
-// const hash = await client.sendTransaction({
-//   account, 
-//   to: '0xa5cc3c03994DB5b0d9A5eEdD10CabaB0813678AC',
-//   value: parseEther('0.00001')
-// })
-
-
-
-// console.log(hash)
-// export const publicClient = createPublicClient({
-//   chain: arbitrumGoerli,
-//   transport: http()
-// })
-
-
-// const { result } = await publicClient.simulateContract({
-//   address: '0xFBA3912Ca04dd458c843e2EE08967fC04f3579c2',
-//   abi: StargateRouterABI,
-//   functionName: 'quoteLayerZeroFee',
-//   account,
-//   args: [10]
-// })
-
-// await walletClient.writeContract({
-//   address: '0x53Bf833A5d6c4ddA888F69c22C88C9f356a41614',
-//   abi: StargateRouterABI,
-//   functionName: 'quoteLayerZeroFee',
-//   account,
-// })
 
 // export const realPublicClient = createPublicClient({
 //   chain: arbitrum,
@@ -94,12 +36,17 @@ const walletClient = createWalletClient({
 //   "0x"  # destination wallet for dust
 //   ]])
 
+type ChainName = keyof typeof chains
+type NestedKeyOf<ObjectType extends object> =
+  { [Key in keyof ObjectType & (string | number)]: ObjectType[Key] extends object
+    ? `${Key}` | `${Key}.${NestedKeyOf<ObjectType[Key]>}`
+    : `${Key}`
+  }[keyof ObjectType & (string | number)];
 
-
-function stargateBridge(privateKey: `0x${string}`,
-  chainFrom: keyof typeof chains,
-  chainTo: keyof typeof chains,
-  tokenName: keyof typeof tokens[keyof typeof chains],
+async function stargateBridge(privateKey: `0x${string}`,
+  chainFrom: ChainName,
+  chainTo: ChainName,
+  tokenName: chains[ChainName],
   amount: string,
 ) {
 
@@ -118,9 +65,20 @@ function stargateBridge(privateKey: `0x${string}`,
     transport: http()
   })
 
-  const erc20token = tokens[chainFrom][tokenName]
+  const erc20token: { address: `0x${string}`, decimals: number } = tokens[chainFrom][tokenName]
+  if (!erc20token) {
+    throw new Error('token not found');
+  }
   const erc20contract = getContract({
-    address: '0x13093E05Eb890dfA6DacecBdE51d24DabAb2Faa1',
+    address: erc20token.address,
+    abi: StargateRouterABI,
+    publicClient,
+    walletClient
+  })
+
+  const gasPrice = await publicClient.getGasPrice()
+  const router = getContract({
+    address:  STARGATE_ROUTER_ADDRESS[chainFrom],
     abi: StargateRouterABI,
     publicClient,
     walletClient
