@@ -1,5 +1,6 @@
+import { Tokens } from '../types.js'
 
-export const tokens = {
+export const tokens:Tokens = {
   Ethereum: {
     USDC: {
       address: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
@@ -13,10 +14,10 @@ export const tokens = {
       address: '0x0C10bF8FcB7Bf5412187A595ab97a3609160b5c6',
       decimals: 18
     },
-    SGETH: {
-      address: '0x72E2F4830b9E45d52F80aC08CB2bEC0FeF72eD9c',
-      decimals: 18
-    },
+    // SGETH: {
+    //   address: '0x72E2F4830b9E45d52F80aC08CB2bEC0FeF72eD9c',
+    //   decimals: 18
+    // },
     DAI: {
       address: '0x6B175474E89094C44Da98b954EedeAC495271d0F',
       decimals: 18
@@ -25,7 +26,7 @@ export const tokens = {
       address: '0x853d955aCEf822Db058eb8505911ED77F175b99e',
       decimals: 18
     },
-    sUSD: {
+    SUSD: {
       address: '0x57Ab1ec28D129707052df4dF418D58a2D46d5f51',
       decimals: 18
     },
@@ -33,7 +34,7 @@ export const tokens = {
       address: '0x5f98805A4E8be255a32880FDeC7F6728C6568bA0',
       decimals: 18
     },
-    Metis: {
+    METIS: {
       address: '0x9e32b13ce7f2e80a01932b42553652e053d6ed8e',
       decimals: 18
     }
@@ -65,7 +66,7 @@ export const tokens = {
       address: '0xd17479997F34dd9156Deef8F95A52D81D265be9c',
       decimals: 18
     },
-    Metis: {
+    METIS: {
       address: '0xe552Fb52a4F19e44ef5A967632DBc320B0820639',
       decimals: 18
     }
@@ -85,86 +86,69 @@ export const tokens = {
     }
   },
   Metis: {
-    Metis: {
-      Address: '0xDeadDeAddeAddEAddeadDEaDDEAdDeaDDeAD0000',
-      Decimals: 18,
+    METIS: {
+      address: '0xDeadDeAddeAddEAddeadDEaDDEAdDeaDDeAD0000',
+      decimals: 18,
     },
     USDT: {
-      Address: '0xbB06DCA3AE6887fAbF931640f67cab3e3a16F4dC',
-      Decimals: 6
+      address: '0xbB06DCA3AE6887fAbF931640f67cab3e3a16F4dC',
+      decimals: 6
     }
   },
   Arbitrum: {
     USDC: {
-      Address: '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8',
-      Decimals: 6,
+      address: '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8',
+      decimals: 6,
     },
     USDT: {
-      Address: '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9',
-      Decimals: 6,
+      address: '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9',
+      decimals: 6,
     },
-    SGETH: {
-      Address: '0x82CbeCF39bEe528B5476FE6d1550af59a9dB6Fc0',
-      Decimals: 18,
-    },
+    // SGETH: {
+    //   address: '0x82CbeCF39bEe528B5476FE6d1550af59a9dB6Fc0',
+    //   decimals: 18,
+    // },
     FRAX: {
-      Address: '0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F',
-      Decimals: 18,
+      address: '0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F',
+      decimals: 18,
     },
   },
   Optimism: {
     USDC: {
-      Address: '0x7f5c764cbc14f9669b88837ca1490cca17c31607',
-      Decimals: 6,
+      address: '0x7f5c764cbc14f9669b88837ca1490cca17c31607',
+      decimals: 6,
     },
-    SGETH: {
-      Address: '0xb69c8CBCD90A39D8D3d3ccf0a3E968511C3856A0',
-      Decimals: 18,
-    },
+    // SGETH: {
+    //   address: '0xb69c8CBCD90A39D8D3d3ccf0a3E968511C3856A0',
+    //   decimals: 18,
+    // },
     DAI: {
-      Address: '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1',
-      Decimals: 18,
+      address: '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1',
+      decimals: 18,
     },
     FRAX: {
-      Address: '0x2E3D870790dC77A83DD1d18184Acc7439A53f475',
-      Decimals: 18,
+      address: '0x2E3D870790dC77A83DD1d18184Acc7439A53f475',
+      decimals: 18,
     },
-    sUSD: {
-      Address: '0x8c6f28f2F1A3C87F0f938b96d27520d9751ec8d9',
-      Decimals: 18,
+    SUSD: {
+      address: '0x8c6f28f2F1A3C87F0f938b96d27520d9751ec8d9',
+      decimals: 18,
     },
     LUSD: {
-      Address: '0xc40F949F8a4e094D1b49a23ea9241D289B7b2819',
-      Decimals: 18,
+      address: '0xc40F949F8a4e094D1b49a23ea9241D289B7b2819',
+      decimals: 18,
     }
   },
   Fantom: {
     USDC: {
-      Address: '0x04068da6c83afcfa0e13ba15a6696662335d5b75',
-      Decimals: 6,
+      address: '0x04068da6c83afcfa0e13ba15a6696662335d5b75',
+      decimals: 6,
     }
   }
 } as const;
 
-typeof tokens['Ethereum']
 
-type NestedKeyOf<ObjectType extends object> = 
-{[Key in keyof ObjectType & (string | number)]: ObjectType[Key] extends object 
-? `${Key}` | `${Key}.${NestedKeyOf<ObjectType[Key]>}`
-: `${Key}`
-}[keyof ObjectType & (string | number)];
-// type ObjectKeys = NestedKeyOf<Person>
+// type TokenNames<T extends ChainNames> = keyof typeof tokens[T];
 
-const getObjectProperty = <T, K extends keyof T>(obj: T, key: K): T[K] => {
-  return obj[key];
-};
 
-// Example usage
-const obj = {
-  nested: {
-    value: 42,
-  },
-};
-
-type NestedValueType = typeof obj.nested.value; // number
-const nestedValue = getObjectProperty(tokens, 'Ethereum');
+// console.log(typeof 'LUSD' === TokenNames<'Optimism'>)

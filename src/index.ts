@@ -1,88 +1,154 @@
-import { createPublicClient, http } from 'viem';
-import { mainnet, arbitrum, arbitrumGoerli, avalancheFuji } from 'viem/chains';
-import { getContract, parseEther, formatEther, formatUnits, createWalletClient } from 'viem';
-import { ERC20_ABI } from './abi/ERC20.js';
-import { privateKeyToAccount } from 'viem/accounts';
+import { formatEther, parseUnits } from 'viem';
+import { STARGATE_ROUTER_ADDRESS, LAYERZERO_CHAINS_ID, POOl_IDS, tokenPathsType, TYPES } from './constants/index.js'
+import dotenv from 'dotenv';
+import { TokenNames, ChainNames, TokenPaths, ItokenNames } from './types.js'
+import { createConfig } from './createConfig.js';
 import { StargateRouterABI } from './abi/router.js';
-import { chains } from './chains.js'
-import { tokens } from './tokens.js';
-import { STARGATE_ROUTER_ADDRESS } from './config.js'
+import { routerETH_ABI } from './abi/routerETH.js';
+import { isPathExist } from './utils/checkCorrectPath.js'
+dotenv.config();
+
+
+// type ChainName = keyof typeof tokens
+// type TokenNames<T extends ChainName> = T extends keyof typeof tokens ? keyof typeof tokens[T] : never;
+
+
+// function getPropertyValue<Obj, Key extends keyof Obj>(obj: Obj, key: Key): Obj[Key] {
+//   return obj[key];
+// }
 
 
 
-// export const realPublicClient = createPublicClient({
-//   chain: arbitrum,
-//   transport: http()
-// })
-// const realWalletClient = createWalletClient({
-//   account,
-//   chain: arbitrum,
-//   transport: http()
-// })
-// const contract = getContract({
-//   address: '0x53Bf833A5d6c4ddA888F69c22C88C9f356a41614',
-//   abi: StargateRouterABI,
-//   publicClient,
-//   walletClient: realWalletClient 
-// })
-
-// const hash = await contract.read.quoteLayerZeroFee([
-//   102,
-//   1,
-//   dst_address,  
-//   "0x",  # payload, using abi.encode()
-//   [0,  # extra gas, if calling smart contract
-//   0,  # amount of dust dropped in destination wallet
-//   "0x"  # destination wallet for dust
-//   ]])
-
-type ChainName = keyof typeof chains
-type NestedKeyOf<ObjectType extends object> =
-  { [Key in keyof ObjectType & (string | number)]: ObjectType[Key] extends object
-    ? `${Key}` | `${Key}.${NestedKeyOf<ObjectType[Key]>}`
-    : `${Key}`
-  }[keyof ObjectType & (string | number)];
-
-async function stargateBridge(privateKey: `0x${string}`,
-  chainFrom: ChainName,
-  chainTo: ChainName,
-  tokenName: chains[ChainName],
-  amount: string,
+async function stargateBridge<
+  ChainFrom extends Extract<keyof tokenPathsType, ChainNames>,
+  TokenFrom extends Extract<keyof tokenPathsType[ChainFrom], ItokenNames>,
+  ChainTo extends Extract<keyof tokenPathsType[ChainFrom][TokenFrom], ChainNames>,
+  TokenTo extends Extract<keyof tokenPathsType[ChainFrom][TokenFrom][ChainTo], ItokenNames>
+>(
+  privateKey: `0x${string}`,
+  chainFrom: ChainFrom,
+  tokenFrom: TokenFrom,
+  chainTo: ChainTo,
+  tokenTo: TokenTo,
+  amount: `${number}`,
 ) {
+  isPathExist(chainFrom, tokenFrom, chainTo, tokenTo)
 
-  const chain = chains[chainFrom]
+  const { account, publicClient, walletClient, erc20contract, erc20token, router, routerETH } = await createConfig(privateKey, chainFrom, tokenFrom)
 
-  const account = privateKeyToAccount(privateKey)
 
-  const publicClient = createPublicClient({
-    chain,
-    transport: http()
-  })
+  const amountBigInt = parseUnits(amount, erc20token.decimals)
 
-  const walletClient = createWalletClient({
-    account,
-    chain,
-    transport: http()
-  })
-
-  const erc20token: { address: `0x${string}`, decimals: number } = tokens[chainFrom][tokenName]
-  if (!erc20token) {
-    throw new Error('token not found');
+  if (typeof amountBigInt !== 'bigint') {
+    throw new Error('Invalid amount')
   }
-  const erc20contract = getContract({
-    address: erc20token.address,
-    abi: StargateRouterABI,
-    publicClient,
-    walletClient
+
+  const poolIDFrom = POOl_IDS[chainFrom][tokenFrom]
+  const poolIDTo = POOl_IDS[chainTo][tokenTo]
+  if (!poolIDFrom || !poolIDTo) {
+    throw new Error('Pool not found')
+  }
+
+  const currentNativeBalance = await publicClient.getBalance({
+    address: account.address
   })
 
-  const gasPrice = await publicClient.getGasPrice()
-  const router = getContract({
-    address:  STARGATE_ROUTER_ADDRESS[chainFrom],
-    abi: StargateRouterABI,
-    publicClient,
-    walletClient
-  })
+  let quoteData = await router.read.quoteLayerZeroFee([
+    LAYERZERO_CHAINS_ID[chainTo],
+    TYPES.SWAP_REMOTE,
+    account.address,
+    "0x",
+    ({
+      dstGasForCall: 0n,
+      dstNativeAmount: 0n,
+      dstNativeAddr: "0x"
+    })]
+  )
+  let feeWei = quoteData[0]
+
+  console.log('fee', formatEther(feeWei))
+
+  if (erc20contract) {
+    const balance = await erc20contract.read.balanceOf([account.address])
+    if (amountBigInt > balance) {
+      throw new Error('Not enough token balance')
+    }
 
 
+
+    const approveHash = await erc20contract.write.approve([
+      STARGATE_ROUTER_ADDRESS[chainFrom],
+      amountBigInt
+    ])
+
+
+    await publicClient.waitForTransactionReceipt(
+      { hash: approveHash }
+    )
+
+    console.log('approveHash', approveHash)
+
+    const swap = await publicClient.simulateContract({
+      address: STARGATE_ROUTER_ADDRESS[chainFrom],
+      abi: StargateRouterABI,
+      functionName: 'swap',
+      args: [
+        LAYERZERO_CHAINS_ID[chainTo],
+        BigInt(poolIDFrom),
+        BigInt(poolIDTo),
+        account.address,
+        amountBigInt,
+        0n,
+        { dstGasForCall: 0n, dstNativeAmount: 0n, dstNativeAddr: "0x" },
+        account.address,
+        "0x",],
+      value: feeWei,
+      account,
+    })
+
+    const gasSwap = await publicClient.estimateContractGas(swap.request)
+
+
+    console.log('gasSwap', formatEther(gasSwap), 'gasApprove', 'balance', formatEther(currentNativeBalance))
+
+    if (gasSwap + feeWei > currentNativeBalance) {
+      throw new Error('Not enough Native balance')
+    }
+
+    const txHash = await walletClient.writeContract(swap.request)
+
+    console.log('swap', txHash)
+
+  } else if (routerETH) {
+    const swapETH = await publicClient.simulateContract({
+      address: routerETH.address,
+      abi: routerETH_ABI,
+      functionName: 'swapETH',
+      args: [
+        LAYERZERO_CHAINS_ID[chainTo],
+        account.address,
+        account.address,
+        amountBigInt,
+        0n
+      ],
+      value: amountBigInt + feeWei,
+      account,
+    })
+
+    const gasSwap = await publicClient.estimateContractGas(swapETH.request)
+    if (gasSwap + amountBigInt > currentNativeBalance) {
+      throw new Error('Not enough Native balance')
+    }
+    const txHash = await walletClient.writeContract(swapETH.request)
+
+    console.log('swap', txHash)
+  }
 }
+
+const privateKey = process.env.PRIVATE_KEY as `0x${string}`
+console.log('privateKey', privateKey)
+
+stargateBridge(privateKey, 'Optimism', 'USDC', 'Arbitrum', "USDT", '5');
+
+
+

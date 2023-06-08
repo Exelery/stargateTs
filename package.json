@@ -5,11 +5,13 @@
   "main": "src/index.ts",
   "type": "module",
   "scripts": {
-    "start": "ts-node --esm src/index.ts"
+    "start": "set NODE_ENV=dev&& ts-node --esm src/index.ts"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "cross-env": "^7.0.3",
+    "dotenv": "^16.1.4",
     "viem": "^0.3.50"
   }
 }
