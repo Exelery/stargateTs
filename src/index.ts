@@ -43,11 +43,7 @@ async function stargateBridge<
     throw new Error('Invalid amount')
   }
 
-  const poolIDFrom = POOl_IDS[chainFrom][tokenFrom]
-  const poolIDTo = POOl_IDS[chainTo][tokenTo]
-  if (!poolIDFrom || !poolIDTo) {
-    throw new Error('Pool not found')
-  }
+
 
   const currentNativeBalance = await publicClient.getBalance({
     address: account.address
@@ -69,6 +65,11 @@ async function stargateBridge<
   console.log('fee', formatEther(feeWei))
 
   if (erc20contract) {
+    const poolIDFrom = POOl_IDS[chainFrom][tokenFrom]
+    const poolIDTo = POOl_IDS[chainTo][tokenTo]
+    if (!poolIDFrom || !poolIDTo) {
+      throw new Error('Pool not found')
+    }
     const balance = await erc20contract.read.balanceOf([account.address])
     if (amountBigInt > balance) {
       throw new Error('Not enough token balance')
@@ -148,7 +149,7 @@ async function stargateBridge<
 const privateKey = process.env.PRIVATE_KEY as `0x${string}`
 console.log('privateKey', privateKey)
 
-stargateBridge(privateKey, 'Optimism', 'USDC', 'Arbitrum', "USDT", '5');
+stargateBridge(privateKey, 'Optimism', 'ETH', 'Arbitrum', "ETH", '0.003');
 
 
 
