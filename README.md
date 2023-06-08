@@ -12,12 +12,12 @@ This function is used to bridge tokens between different blockchain networks usi
 
 ### Parameters
 
-- `privateKey: `0x${string}``: The private key associated with the user's account on the source chain. It is required to authenticate and sign the transaction.
+- `privateKey: 0x${string}`: The private key associated with the user's account on the source chain. It is required to authenticate and sign the transaction.
 - `chainFrom: ChainFrom`: The source blockchain network from which the tokens will be transferred. It should be one of the valid `ChainNames`.
 - `tokenFrom: TokenFrom`: The token to be transferred from the source chain. It should be a valid token name from the `chainFrom` network.
 - `chainTo: ChainTo`: The target blockchain network where the tokens will be transferred. It should be one of the valid `ChainNames`.
 - `tokenTo: TokenTo`: The token to be received on the target chain. It should be a valid token name from the `chainTo` network.
-- `amount: `0x${number}``: The amount of tokens to be transferred. It should be a numeric value represented as a string.
+- `amount: 0x${number}`: The amount of tokens to be transferred. It should be a numeric value represented as a string.
 
 ### Return Value
 
