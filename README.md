@@ -1,7 +1,7 @@
 # stargateTs
 
 Run script: npm run start
-
+The minimum amount for exchanging erc20 tokens is approximately $ 3 .
 ## Function: stargateBridge
 
 ```typescript
