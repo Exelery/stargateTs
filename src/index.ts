@@ -132,4 +132,4 @@ async function stargateBridge<
 const privateKey = process.env.PRIVATE_KEY as `0x${string}`
 console.log('privateKey', privateKey)
 
-stargateBridge(privateKey, 'Arbitrum', 'USDC', 'Optimism', "USDT", '5');
+stargateBridge(privateKey, 'Arbitrum', 'USDC', 'Optimism', "USDC", '5');

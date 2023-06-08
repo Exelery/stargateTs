@@ -128,7 +128,6 @@ export const tokenPaths = {
       },
       Optimism: {
         USDC: true,
-        USDT: true,
       },
       Fantom: {
         USDC: true,
@@ -153,7 +152,6 @@ export const tokenPaths = {
       },
       Optimism: {
         USDC: true,
-        USDT: true,
       },
       Fantom: {
         USDC: true,
@@ -291,7 +289,6 @@ export const tokenPaths = {
       },
       Optimism: {
         USDC: true,
-        USDT: true,
       },
       Fantom: {
         USDC: true,
@@ -320,7 +317,6 @@ export const tokenPaths = {
       },
       Optimism: {
         USDC: true,
-        USDT: true,
       },
       Fantom: {
         USDC: true,
@@ -383,7 +379,6 @@ export const tokenPaths = {
       },
       Optimism: {
         USDC: true,
-        USDT: true,
       },
       Avalanche: {
         USDC: true,
@@ -405,7 +400,6 @@ export const tokenPaths = {
       },
       Optimism: {
         USDC: true,
-        USDT: true,
       },
       Avalanche: {
         USDC: true,
@@ -571,7 +565,6 @@ export const tokenPaths = {
       },
       Optimism: {
         USDC: true,
-        USDT: true,
       },
     },
   },
