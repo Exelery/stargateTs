@@ -12,6 +12,6 @@
     "types": ["node"],
     "outDir": "dist"
   },
-  "include": ["src/*", "src/constants/chains.ts", "src/constants/tokens.ts", "src/constants/stargate.ts"],
+  "include": ["src/*", "src/constants/chains.ts", "src/constants/tokens.ts", "src/constants/stargate.ts", "src/utils/createConfig.ts"],
   "exclude": ["node_modules"]
 }

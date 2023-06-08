@@ -1,12 +1,12 @@
-import { tokenPaths, tokenPathsType } from '../constants/index.js'
+import { tokenPaths, TokenPathsType } from '../constants/index.js'
 
 
 
 export function isPathExist<
-  ChainFrom extends keyof tokenPathsType,
-  TokenFrom extends keyof tokenPathsType[ChainFrom],
-  ChainTo extends keyof tokenPathsType[ChainFrom][TokenFrom],
-  TokenTo extends keyof tokenPathsType[ChainFrom][TokenFrom][ChainTo]
+  ChainFrom extends keyof TokenPathsType,
+  TokenFrom extends keyof TokenPathsType[ChainFrom],
+  ChainTo extends keyof TokenPathsType[ChainFrom][TokenFrom],
+  TokenTo extends keyof TokenPathsType[ChainFrom][TokenFrom][ChainTo]
 >(
   chainFrom: ChainFrom,
   tokenFrom: TokenFrom,
@@ -23,7 +23,3 @@ export function isPathExist<
     }
   return !!isTokenPathExist;
 }
-
-// console.log(isCorrectPath("Ethereum", "USDC", "", "USDT"));
-// console.log(isCorrectPath("Ethereum", "USDC", "BSC", "BUSD"));
-// console.log(isCorrectPath("Ethereum", "ETH", "Optimism")); 

@@ -1,4 +1,4 @@
-import { tokenPathsType } from "./constants/paths.js"
+export { TokenPathsType } from "./constants/paths.js"
 
 
 export type ChainNames = "Ethereum" | "Avalanche" | "BSC" | "Polygon" | "Metis" | "Arbitrum" | "Optimism" | "Fantom";
@@ -20,31 +20,25 @@ export type IpoolIDs = {
   };
 };
 
-// export type IpoolIDs = {
-//   [Chain in keyof tokenPathsType]: {
-//     [Token in keyof tokenPathsType[Chain]]?: number;
-//   };
-// };
+export type TokenPaths = {
+  [Chain in ChainNames]: {
+    [Token in ItokenNames]?: {
+      [ChainDST in Exclude<ChainNames, Chain>]?: {
+        [TokenDST in ItokenNames]?: boolean;
+      };
+    };
+  };
+};
 
 // export type TokenPaths = {
 //   [Chain in ChainNames]: {
-//     [Token in ItokenNames]?: {
+//     [Token in Extract<keyof TokenPaths[Chain], ItokenNames>]: {
 //       [ChainDST in Exclude<ChainNames, Chain>]?: {
 //         [TokenDST in ItokenNames]?: boolean;
 //       };
 //     };
 //   };
 // };
-
-export type Token = {
-  [Token in ItokenNames]: {
-    [ChainDST in Exclude<ChainNames, Chain>]?:
-    Partial<{ [TokenDST in ItokenNames]: boolean }>;
-  }
-
-};
-
-export type TokenPaths = Record<ChainNames, Token>
 
 
 export type TokenNames<T extends ChainNames> = T extends keyof Tokens ? keyof Tokens[T] : never;

@@ -1,29 +1,17 @@
 import { formatEther, parseUnits } from 'viem';
-import { STARGATE_ROUTER_ADDRESS, LAYERZERO_CHAINS_ID, POOl_IDS, tokenPathsType, TYPES } from './constants/index.js'
+import { STARGATE_ROUTER_ADDRESS, LAYERZERO_CHAINS_ID, POOl_IDS, TYPES } from './constants/index.js'
 import dotenv from 'dotenv';
-import { TokenNames, ChainNames, TokenPaths, ItokenNames } from './types.js'
-import { createConfig } from './createConfig.js';
-import { StargateRouterABI } from './abi/router.js';
-import { routerETH_ABI } from './abi/routerETH.js';
-import { isPathExist } from './utils/checkCorrectPath.js'
+import { ChainNames, ItokenNames, TokenPathsType } from './types.js'
+import { createConfig, isPathExist, simulateETHSwap, checkNativeBalance } from './utils/index.js';
+import { StargateRouterABI } from './abi/index.js';
 dotenv.config();
 
 
-// type ChainName = keyof typeof tokens
-// type TokenNames<T extends ChainName> = T extends keyof typeof tokens ? keyof typeof tokens[T] : never;
-
-
-// function getPropertyValue<Obj, Key extends keyof Obj>(obj: Obj, key: Key): Obj[Key] {
-//   return obj[key];
-// }
-
-
-
 async function stargateBridge<
-  ChainFrom extends Extract<keyof tokenPathsType, ChainNames>,
-  TokenFrom extends Extract<keyof tokenPathsType[ChainFrom], ItokenNames>,
-  ChainTo extends Extract<keyof tokenPathsType[ChainFrom][TokenFrom], ChainNames>,
-  TokenTo extends Extract<keyof tokenPathsType[ChainFrom][TokenFrom][ChainTo], ItokenNames>
+  ChainFrom extends Extract<keyof TokenPathsType, ChainNames>,
+  TokenFrom extends Extract<keyof TokenPathsType[ChainFrom], ItokenNames>,
+  ChainTo extends Extract<keyof TokenPathsType[ChainFrom][TokenFrom], ChainNames>,
+  TokenTo extends Extract<keyof TokenPathsType[ChainFrom][TokenFrom][ChainTo], ItokenNames>
 >(
   privateKey: `0x${string}`,
   chainFrom: ChainFrom,
@@ -75,7 +63,7 @@ async function stargateBridge<
       throw new Error('Not enough token balance')
     }
 
-
+    console.log('token balance', balance, amountBigInt)
 
     const approveHash = await erc20contract.write.approve([
       STARGATE_ROUTER_ADDRESS[chainFrom],
@@ -88,6 +76,7 @@ async function stargateBridge<
     )
 
     console.log('approveHash', approveHash)
+    console.log('data', currentNativeBalance)
 
     const swap = await publicClient.simulateContract({
       address: STARGATE_ROUTER_ADDRESS[chainFrom],
@@ -106,42 +95,36 @@ async function stargateBridge<
       value: feeWei,
       account,
     })
+    console.log('test')
 
     const gasSwap = await publicClient.estimateContractGas(swap.request)
 
 
     console.log('gasSwap', formatEther(gasSwap), 'gasApprove', 'balance', formatEther(currentNativeBalance))
 
-    if (gasSwap + feeWei > currentNativeBalance) {
-      throw new Error('Not enough Native balance')
-    }
+    checkNativeBalance(gasSwap + feeWei, currentNativeBalance)
+
 
     const txHash = await walletClient.writeContract(swap.request)
 
     console.log('swap', txHash)
 
   } else if (routerETH) {
-    const swapETH = await publicClient.simulateContract({
-      address: routerETH.address,
-      abi: routerETH_ABI,
-      functionName: 'swapETH',
-      args: [
-        LAYERZERO_CHAINS_ID[chainTo],
-        account.address,
-        account.address,
-        amountBigInt,
-        0n
-      ],
-      value: amountBigInt + feeWei,
+    checkNativeBalance(amountBigInt, currentNativeBalance)
+    const { request } = await simulateETHSwap(
+      publicClient,
+      routerETH,
+      LAYERZERO_CHAINS_ID[chainTo],
+      amountBigInt,
       account,
-    })
+      feeWei,
+      currentNativeBalance
+    )
+    const gasSwap = await publicClient.estimateContractGas(request)
 
-    const gasSwap = await publicClient.estimateContractGas(swapETH.request)
-    if (gasSwap + amountBigInt > currentNativeBalance) {
-      throw new Error('Not enough Native balance')
-    }
-    const txHash = await walletClient.writeContract(swapETH.request)
+    checkNativeBalance(gasSwap + amountBigInt, currentNativeBalance)
 
+    const txHash = await walletClient.writeContract(request)
     console.log('swap', txHash)
   }
 }
@@ -149,7 +132,4 @@ async function stargateBridge<
 const privateKey = process.env.PRIVATE_KEY as `0x${string}`
 console.log('privateKey', privateKey)
 
-stargateBridge(privateKey, 'Optimism', 'ETH', 'Arbitrum', "ETH", '0.003');
-
-
-
+stargateBridge(privateKey, 'Arbitrum', 'USDC', 'Avalanche', "USDT", '5');

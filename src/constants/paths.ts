@@ -385,6 +385,10 @@ export const tokenPaths = {
         USDC: true,
         USDT: true,
       },
+      Avalanche: {
+        USDC: true,
+        USDT: true,
+      }
     },
     USDT: {
       Ethereum: {
@@ -403,6 +407,10 @@ export const tokenPaths = {
         USDC: true,
         USDT: true,
       },
+      Avalanche: {
+        USDC: true,
+        USDT: true,
+      }
     },
     DAI: {
       Ethereum: {
@@ -626,4 +634,4 @@ export const tokenPaths = {
 
 
 // const testTokenPaths = tokenPaths as
-export type tokenPathsType = typeof tokenPaths;
+export type TokenPathsType = typeof tokenPaths;
