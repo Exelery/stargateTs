@@ -67,6 +67,7 @@ export const POOl_IDS: IpoolIDs = {
   },
   Optimism: {
     USDC: 1,
+    USDT: 2,
     DAI: 3,
     FRAX: 7,
     SUSD: 14,
