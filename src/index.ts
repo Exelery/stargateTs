@@ -2,8 +2,7 @@ import { formatEther, parseUnits } from 'viem';
 import { STARGATE_ROUTER_ADDRESS, LAYERZERO_CHAINS_ID, POOl_IDS, TYPES } from './constants/index.js'
 import dotenv from 'dotenv';
 import { ChainNames, ItokenNames, TokenPathsType } from './types.js'
-import { createConfig, isPathExist, simulateETHSwap, checkNativeBalance } from './utils/index.js';
-import { StargateRouterABI } from './abi/index.js';
+import { createConfig, isPathExist, checkNativeBalance } from './utils/index.js';
 dotenv.config();
 
 
@@ -30,8 +29,6 @@ async function stargateBridge<
   if (typeof amountBigInt !== 'bigint') {
     throw new Error('Invalid amount')
   }
-
-
 
   const currentNativeBalance = await publicClient.getBalance({
     address: account.address
@@ -77,49 +74,40 @@ async function stargateBridge<
 
     console.log('approveHash', approveHash)
     console.log('data', currentNativeBalance)
-
-    const swap = await publicClient.simulateContract({
-      address: STARGATE_ROUTER_ADDRESS[chainFrom],
-      abi: StargateRouterABI,
-      functionName: 'swap',
-      args: [
-        LAYERZERO_CHAINS_ID[chainTo],
-        BigInt(poolIDFrom),
-        BigInt(poolIDTo),
-        account.address,
-        amountBigInt,
-        0n,
-        { dstGasForCall: 0n, dstNativeAmount: 0n, dstNativeAddr: "0x" },
-        account.address,
-        "0x",],
-      value: feeWei,
-      account,
-    })
-    console.log('test')
-
-    const gasSwap = await publicClient.estimateContractGas(swap.request)
-
+    const {request} = await router.simulate.swap([
+      LAYERZERO_CHAINS_ID[chainTo],
+      BigInt(poolIDFrom),
+      BigInt(poolIDTo),
+      account.address,
+      amountBigInt,
+      0n,
+      { dstGasForCall: 0n, dstNativeAmount: 0n, dstNativeAddr: "0x" },
+      account.address,
+      "0x",], {value:feeWei})
+      
+    const gasSwap = await publicClient.estimateContractGas(request)
 
     console.log('gasSwap', formatEther(gasSwap), 'gasApprove', 'balance', formatEther(currentNativeBalance))
 
     checkNativeBalance(gasSwap + feeWei, currentNativeBalance)
 
 
-    const txHash = await walletClient.writeContract(swap.request)
+    const txHash = await walletClient.writeContract(request)
 
     console.log('swap', txHash)
 
   } else if (routerETH) {
     checkNativeBalance(amountBigInt, currentNativeBalance)
-    const { request } = await simulateETHSwap(
-      publicClient,
-      routerETH,
+    
+    const { request } = await routerETH.simulate.swapETH([
       LAYERZERO_CHAINS_ID[chainTo],
+      account.address,
+      account.address,
       amountBigInt,
-      account,
-      feeWei,
-      currentNativeBalance
-    )
+      0n
+    ],{
+      value: amountBigInt + feeWei
+      })
     const gasSwap = await publicClient.estimateContractGas(request)
 
     checkNativeBalance(gasSwap + amountBigInt, currentNativeBalance)
@@ -132,4 +120,4 @@ async function stargateBridge<
 const privateKey = process.env.PRIVATE_KEY as `0x${string}`
 console.log('privateKey', privateKey)
 
-stargateBridge(privateKey, 'Arbitrum', 'USDC', 'Optimism', "USDC", '5');
+stargateBridge(privateKey, 'Avalanche', 'USDC', 'Optimism', "USDC", '5');
