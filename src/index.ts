@@ -1,5 +1,5 @@
 import { formatEther, parseUnits } from 'viem';
-import { STARGATE_ROUTER_ADDRESS, LAYERZERO_CHAINS_ID, POOl_IDS, TYPES } from './constants/index.js'
+import { LAYERZERO_CHAINS_ID, POOl_IDS, TYPES } from './constants/index.js'
 import dotenv from 'dotenv';
 import { ChainNames, ItokenNames, TokenPathsType } from './types.js'
 import { createConfig, isPathExist, checkNativeBalance } from './utils/index.js';
@@ -60,10 +60,9 @@ async function stargateBridge<
       throw new Error('Not enough token balance')
     }
 
-    console.log('token balance', balance, amountBigInt)
 
     const approveHash = await erc20contract.write.approve([
-      STARGATE_ROUTER_ADDRESS[chainFrom],
+      router.address,
       amountBigInt
     ])
 
@@ -74,7 +73,7 @@ async function stargateBridge<
 
     console.log('approveHash', approveHash)
     console.log('data', currentNativeBalance)
-    const {request} = await router.simulate.swap([
+    const {request, result} = await router.simulate.swap([
       LAYERZERO_CHAINS_ID[chainTo],
       BigInt(poolIDFrom),
       BigInt(poolIDTo),
@@ -83,7 +82,9 @@ async function stargateBridge<
       0n,
       { dstGasForCall: 0n, dstNativeAmount: 0n, dstNativeAddr: "0x" },
       account.address,
-      "0x",], {value:feeWei})
+      "0x",], {value:feeWei, account})
+      console.log('data', result)
+
       
     const gasSwap = await publicClient.estimateContractGas(request)
 
@@ -120,4 +121,4 @@ async function stargateBridge<
 const privateKey = process.env.PRIVATE_KEY as `0x${string}`
 console.log('privateKey', privateKey)
 
-stargateBridge(privateKey, 'Avalanche', 'USDC', 'Optimism', "USDC", '5');
+stargateBridge(privateKey, 'Arbitrum', 'USDC', 'Avalanche', "USDT", '3');

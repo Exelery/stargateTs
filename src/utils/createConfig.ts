@@ -66,7 +66,8 @@ export async function createConfig<K extends ChainNames>(privateKey: `0x${string
     address: STARGATE_ROUTER_ADDRESS[chainFrom],
     abi: StargateRouterABI,
     publicClient,
-    walletClient
+    walletClient,
+    
   })
 
   return { account, publicClient, walletClient, erc20contract, erc20token, router, routerETH }
