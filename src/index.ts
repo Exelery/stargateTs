@@ -107,7 +107,8 @@ async function stargateBridge<
       amountBigInt,
       0n
     ],{
-      value: amountBigInt + feeWei
+      value: amountBigInt + feeWei,
+      account
       })
     const gasSwap = await publicClient.estimateContractGas(request)
 
