@@ -1,4 +1,4 @@
-import { TokenPaths } from '../types.js';
+// import { TokenPaths } from '../types.js';
 export const tokenPaths = {
   Ethereum: {
     USDC: {

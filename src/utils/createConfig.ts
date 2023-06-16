@@ -7,12 +7,10 @@ import { ERC20_ABI, routerETH_ABI, StargateRouterABI } from '../abi/index.js';
 
 
 
-function isNativeSwap<K extends ChainNames>(tokenName: TokenNames<K>, chainFrom: ChainNames): chainFrom is "Ethereum" | "Arbitrum" | "Optimism" {
-  return tokenName === 'ETH' && ['Ethereum', 'Arbitrum', 'Optimism'].includes(chainFrom)
-}
 
-export async function createConfig<K extends ChainNames>(privateKey: `0x${string}`,
-  chainFrom: ChainNames, tokenName: TokenNames<K>) {
+
+export async function createConfig(privateKey: `0x${string}`,
+  chainFrom: ChainNames) {
   const chain = chains[chainFrom]
 
   const account = privateKeyToAccount(privateKey)
@@ -26,48 +24,24 @@ export async function createConfig<K extends ChainNames>(privateKey: `0x${string
     chain,
     transport: http()
   })
-  let erc20token;
-  let erc20contract;
-  let routerETH;
-
-  if (isNativeSwap(tokenName, chainFrom)) {
-    erc20token = {
-      decimals: 18,
-    }
-    routerETH = getContract({
-      address: STARGATE_ETH_ADDRESS[chainFrom],
-      abi: routerETH_ABI,
-      publicClient,
-      walletClient
-    })
-  } else {
-    erc20token = tokens[chainFrom][tokenName];
-    if (!erc20token) {
-      throw new Error('token not found');
-    }
-
-    erc20contract = getContract({
-      address: erc20token.address,
-      abi: ERC20_ABI,
-      publicClient,
-      walletClient
-    })
-
-  }
-
-  console.log('erc20token', erc20token.address)
-
-  if (!erc20token) {
-    throw new Error('token not found');
-  }
-
-
+  
   const router = getContract({
     address: STARGATE_ROUTER_ADDRESS[chainFrom],
     abi: StargateRouterABI,
     publicClient,
-    walletClient
-  })
+    walletClient,
 
-  return { account, publicClient, walletClient, erc20contract, erc20token, router, routerETH }
+  })
+  
+  return { account, publicClient, walletClient, router }
+}
+
+export function getTokenData<K extends ChainNames>(
+  chainFrom: ChainNames, tokenName: TokenNames<K>
+) {
+  const erc20token = tokens[chainFrom][tokenName];
+  if (!erc20token) {
+    throw new Error('token not found');
+  }
+  return erc20token
 }
